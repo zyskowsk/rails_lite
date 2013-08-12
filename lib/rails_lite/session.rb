@@ -3,8 +3,8 @@ require 'webrick'
 
 class Session
   def initialize(req)
+  	@session = {}
   	req.cookies.each do |cookie| 
-  		@session = {}
   		@session = JSON.parse(cookie.value) if cookie.name == '_rails_lite_app'
   	end
   end
