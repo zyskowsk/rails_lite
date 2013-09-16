@@ -4,8 +4,9 @@ class Params
   attr_reader :params
 
   def initialize(req, route_params)
-    @params = {}
-    parse_www_encoded_form(req.query_string)
+    @params = route_params
+    parse_www_encoded_form(req.query_string) unless req.query_string.nil?
+    parse_www_encoded_form(req.body) unless req.body.nil?
   end
 
   def [](key)
@@ -14,12 +15,6 @@ class Params
 
   def to_s
      @params.to_json
-
-    # query_array = []
-    # @params.each do |key, value|
-    #   query_array << "#{key}=#{value}"
-    # end
-    # query_array.join("&")
   end
 
   private
@@ -46,9 +41,6 @@ class Params
 
     current_hash
   end
-
-  def parse_nested_keys_rec(keys, value)
-
 end
 
 

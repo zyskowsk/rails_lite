@@ -1,7 +1,9 @@
 require 'erb'
 require 'active_support/core_ext'
+require 'debugger'
 require_relative 'params'
 require_relative 'session'
+require_relative 'flash'
 
 class ControllerBase
   attr_reader :params
@@ -11,12 +13,17 @@ class ControllerBase
     @params = Params.new(@req, route_params)
   end
 
-  def session
-    @session ||= Session.new(@req)
-  end
-
   def already_rendered?
     @already_rendered
+  end
+
+  def flash
+    @flash ||= Flash.new(@req)
+  end
+
+  def invoke_action(action_name)
+    self.send(action_name)
+    render(action_name) unless already_rendered? || response_built?
   end
 
   def redirect_to(url)
@@ -24,6 +31,7 @@ class ControllerBase
     @res["Location"]= "#{url}"
     @response_built = true
     session.store_session(@res)
+    flash.store_flash(@res)
   end
 
   def render_content(body, content_type)
@@ -31,6 +39,7 @@ class ControllerBase
     @res.body = body
     @already_rendered = true
     session.store_session(@res)
+    flash.store_flash(@res)
   end
 
   def render(action_name)
@@ -42,6 +51,12 @@ class ControllerBase
     render_content(result, "text/html")
   end
 
-  def invoke_action(name)
+  def response_built?
+    @response_built
   end
+
+  def session
+    @session ||= Session.new(@req)
+  end
+
 end
