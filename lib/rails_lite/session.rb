@@ -2,6 +2,7 @@ require 'json'
 require 'webrick'
 
 class Session
+  
   def initialize(req)
   	@session = {}
   	req.cookies.each do |cookie| 

@@ -18,29 +18,31 @@ class Params
   end
 
   private
-  def parse_www_encoded_form(www_encoded_form)
-    query_data = URI::decode_www_form(www_encoded_form)
-    query_data.each do |pair|
-      keys, value = parse_key(pair.first), pair.last
-      @params[keys.first] = parse_nested_key(keys, value).values.first
-    end
-  end
-
-  def parse_key(key)
-    key.scan(/(\w+)/).flatten
-  end
-
-  def parse_nested_key(keys, value)
-    current_hash = {}
-    current_hash[keys.pop] = value
-    until keys.empty?
-      new_hash = {}
-      new_hash[keys.pop] = current_hash
-      current_hash = new_hash
+    def parse_key(key)
+      key.scan(/(\w+)/).flatten
     end
 
-    current_hash
-  end
+    def parse_nested_key(keys, value)
+      current_hash = {}
+      current_hash[keys.pop] = value
+
+      until keys.empty?
+        new_hash = {}
+        new_hash[keys.pop] = current_hash
+        current_hash = new_hash
+      end
+
+      current_hash
+    end
+
+    def parse_www_encoded_form(www_encoded_form)
+      query_data = URI::decode_www_form(www_encoded_form)
+      
+      query_data.each do |pair|
+        keys, value = parse_key(pair.first), pair.last
+        @params[keys.first] = parse_nested_key(keys, value).values.first
+      end
+    end
 end
 
 

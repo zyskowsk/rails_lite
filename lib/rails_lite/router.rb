@@ -3,7 +3,7 @@ class Route
 
   def initialize(pattern, http_method, controller_class, action_name)
     @pattern, @http_method, @controller_class, @action_name =
-                pattern, http_method, controller_class, action_name
+      pattern, http_method, controller_class, action_name
   end
 
   def matches?(req)
@@ -12,6 +12,16 @@ class Route
   end
 
   def run(req, res)
+    matches = Regexp.new(self.pattern).match(req.request_uri.request_uri)
+
+    route_params = {}
+    matches.names.each do |name|
+      route_params[name.to_sym] = matches[name]
+    end
+
+    @controller_class
+      .new(req, res, route_params)
+      .invoke_action(action_name)
   end
 end
 
@@ -45,20 +55,12 @@ class Router
   end
 
   def run(req, res)
-    if match(req).nil?
+    matching_route = match(req)
+
+    if matching_route.nil?
       res.status = 404
     else
-      route = match(req)
-      route_params = {}
-      matches = Regexp.new(route.pattern).match(req.request_uri.request_uri)
-      matches.names.each do |name|
-        route_params[name.to_sym] = matches[name]
-      end
-      route.controller_class.new(
-        req,
-        res, 
-        route_params
-      ).invoke_action(route.action_name)
+      matching_route.run(req, res)
     end
   end
 end

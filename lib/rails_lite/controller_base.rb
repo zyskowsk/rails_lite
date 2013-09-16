@@ -1,6 +1,5 @@
 require 'erb'
 require 'active_support/core_ext'
-require 'debugger'
 require_relative 'params'
 require_relative 'session'
 require_relative 'flash'
@@ -17,10 +16,6 @@ class ControllerBase
     @already_rendered
   end
 
-  def flash
-    @flash ||= Flash.new(@req)
-  end
-
   def invoke_action(action_name)
     self.send(action_name)
     render(action_name) unless already_rendered? || response_built?
@@ -30,16 +25,8 @@ class ControllerBase
     @res.status = "302"
     @res["Location"]= "#{url}"
     @response_built = true
-    session.store_session(@res)
-    flash.store_flash(@res)
-  end
 
-  def render_content(body, content_type)
-    @res.content_type = content_type
-    @res.body = body
-    @already_rendered = true
     session.store_session(@res)
-    flash.store_flash(@res)
   end
 
   def render(action_name)
@@ -51,6 +38,14 @@ class ControllerBase
     render_content(result, "text/html")
   end
 
+  def render_content(body, content_type)
+    @res.content_type = content_type
+    @res.body = body
+    @already_rendered = true
+
+    session.store_session(@res)
+  end
+  
   def response_built?
     @response_built
   end
@@ -58,5 +53,4 @@ class ControllerBase
   def session
     @session ||= Session.new(@req)
   end
-
 end
