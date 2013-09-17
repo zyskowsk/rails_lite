@@ -1,4 +1,5 @@
-## Rails Lite
+Rails Lite
+==========
 
 This is a lite implementation of the basic functionality that comes along with the Rails ActionController::Base class
 as well as the rails Router.
